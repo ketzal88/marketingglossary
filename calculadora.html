@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculadora de ROAS de equilibrio · MarketingGlossary</title>
+<meta name="description" content="Calcula tu margen de contribución, tu ROAS de equilibrio y tu CPA máximo por pedido. Incluye cuánto puedes descontar sin perder dinero.">
+<style>
+:root{--bg:#0B0E12;--card:#141920;--line:#242B35;--txt:#EAEDF0;--mut:#9AA4B2;--ok:#B8F04A;--bad:#FF6B6B}
+*{box-sizing:border-box}
+body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 16px;line-height:1.55;background:var(--bg);color:var(--txt)}
+a{color:var(--ok)}
+h1{letter-spacing:-1px;margin-bottom:4px}
+h2{font-size:1.15rem;margin:0 0 12px}
+.sub{color:var(--mut);margin-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:20px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:.9rem;color:var(--mut);margin-bottom:4px}
+input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:1rem}
+input:focus{outline:2px solid var(--ok);border-color:transparent}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:560px){.res{grid-template-columns:1fr}}
+.kpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px}
+.kpi span{display:block;font-size:.85rem;color:var(--mut)}
+.kpi b{font-size:1.6rem;letter-spacing:-.5px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.note{font-size:.9rem;color:var(--mut)}
+.tag{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mut);margin-left:6px;vertical-align:middle}
+#veredicto{margin-top:14px;font-size:1rem}
+</style>
+</head>
+<body>
+<h1>Calculadora de ROAS de equilibrio</h1>
+<p class="sub">Cuánto tienes que vender por cada unidad de dinero en anuncios para no perder. Todo se calcula en tu navegador: no se guarda ni se envía nada.</p>
+
+<div class="card">
+  <h2>1. Tu pedido promedio <span class="tag">valores de ejemplo, cámbialos</span></h2>
+  <div class="grid">
+    <div><label for="precio">Precio de venta del pedido (sin impuestos que no sean tuyos)</label><input id="precio" type="number" min="0" step="any" value="50000"></div>
+    <div><label for="costo">Costo del producto (mercadería)</label><input id="costo" type="number" min="0" step="any" value="20000"></div>
+    <div><label for="envio">Envío que pagas tú</label><input id="envio" type="number" min="0" step="any" value="5000"></div>
+    <div><label for="otros">Otros costos por pedido (empaque, preparación)</label><input id="otros" type="number" min="0" step="any" value="1500"></div>
+    <div><label for="complat">Comisión de la plataforma (%)</label><input id="complat" type="number" min="0" max="100" step="any" value="3"></div>
+    <div><label for="compago">Comisión del medio de pago (%)</label><input id="compago" type="number" min="0" max="100" step="any" value="5"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>2. Resultado</h2>
+  <div class="res">
+    <div class="kpi"><span>Margen de contribución</span><b id="mc">-</b><span id="mcpct"></span></div>
+    <div class="kpi"><span>ROAS de equilibrio</span><b id="roase">-</b><span>por debajo de esto pierdes</span></div>
+    <div class="kpi"><span>CPA máximo por pedido</span><b id="cpa">-</b><span>lo máximo que puedes pagar en anuncios por venta</span></div>
+  </div>
+  <div class="grid" style="margin-top:16px">
+    <div><label for="roas">Tu ROAS actual (opcional)</label><input id="roas" type="number" min="0" step="any" placeholder="por ejemplo 4"></div>
+  </div>
+  <p id="veredicto"></p>
+</div>
+
+<div class="card">
+  <h2>3. ¿Cuánto puedes descontar? (Black Friday, Cyber, rebajas)</h2>
+  <div class="grid">
+    <div><label for="desc">Descuento sobre el precio (%)</label><input id="desc" type="number" min="0" max="100" step="any" value="20"></div>
+  </div>
+  <div class="res" style="margin-top:16px">
+    <div class="kpi"><span>Margen con descuento</span><b id="mcd">-</b><span id="mcdpct"></span></div>
+    <div class="kpi"><span>ROAS de equilibrio con descuento</span><b id="roasd">-</b><span id="roasdtxt"></span></div>
+    <div class="kpi"><span>Descuento máximo sin anuncios</span><b id="dmax">-</b><span>con este descuento el margen llega a cero</span></div>
+  </div>
+</div>
+
+<div class="card note">
+  <h2 style="color:var(--txt)">Cómo se calcula</h2>
+  <p>Margen de contribución = precio − costo del producto − envío − otros costos − comisiones (% del precio).</p>
+  <p>ROAS de equilibrio = 1 ÷ margen de contribución en %. Equivale a precio ÷ margen de contribución.</p>
+  <p>CPA máximo = margen de contribución por pedido. Si pagas más que eso en anuncios por cada venta, pierdes dinero en esa venta.</p>
+  <p>El descuento baja el precio y las comisiones, pero no el costo del producto ni el envío. Por eso un 20% de descuento puede comerse mucho más que el 20% de tu margen.</p>
+  <p>No incluye costos fijos (sueldos, alquiler, herramientas). Para ganar dinero de verdad necesitas estar por encima del equilibrio, no justo en él.</p>
+</div>
+
+<p class="note">Explicado en video: <a href="https://youtu.be/XSQibtAzzKc">Un ROAS de 4 puede hacerte perder dinero</a> · <a href="https://www.youtube.com/channel/UCdGFn31dvB0oaixJRdA-L2A">Canal MarketingGlossary</a> · <a href="index.html">Inicio</a></p>
+
+<script>
+const $=id=>document.getElementById(id);
+const n=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0};
+const fmt=v=>v.toLocaleString('es',{maximumFractionDigits:0});
+const pct=v=>(v*100).toLocaleString('es',{maximumFractionDigits:1})+'%';
+const x=v=>v.toLocaleString('es',{maximumFractionDigits:2})+'x';
+function margen(precio){
+  const com=(n('complat')+n('compago'))/100;
+  return precio-n('costo')-n('envio')-n('otros')-precio*com;
+}
+function calc(){
+  const p=n('precio');
+  const mc=margen(p), m=p>0?mc/p:0;
+  $('mc').textContent=fmt(mc); $('mc').className=mc>0?'ok':'bad';
+  $('mcpct').textContent=p>0?pct(m)+' del precio':'';
+  $('roase').textContent=m>0?x(1/m):'no hay';
+  $('cpa').textContent=mc>0?fmt(mc):'0';
+  const r=parseFloat($('roas').value), v=$('veredicto');
+  if(isFinite(r)&&r>0&&p>0){
+    const ganancia=r*m-1; // por cada 1 invertido en anuncios
+    v.innerHTML=ganancia>=0
+      ?'<span class="ok">Con ROAS '+x(r)+' ganas '+(ganancia*100).toFixed(0)+' por cada 100 que inviertes en anuncios (antes de costos fijos).</span>'
+      :'<span class="bad">Con ROAS '+x(r)+' pierdes '+(-ganancia*100).toFixed(0)+' por cada 100 que inviertes en anuncios.</span>';
+  } else v.textContent='';
+  const d=Math.min(Math.max(n('desc'),0),100)/100, pd=p*(1-d);
+  const mcd=margen(pd), md=pd>0?mcd/pd:0;
+  $('mcd').textContent=fmt(mcd); $('mcd').className=mcd>0?'ok':'bad';
+  $('mcdpct').textContent=pd>0?pct(md)+' del precio con descuento':'';
+  $('roasd').textContent=md>0?x(1/md):'no hay';
+  $('roasdtxt').textContent=md>0&&m>0?'antes: '+x(1/m):'con este descuento pierdes en cada venta';
+  const com=(n('complat')+n('compago'))/100, fijos=n('costo')+n('envio')+n('otros');
+  const dmax=p>0&&com<1?1-fijos/(p*(1-com)):0;
+  $('dmax').textContent=dmax>0?pct(dmax):'0%';
+}
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+calc();
+</script>
+</body>
+</html>
